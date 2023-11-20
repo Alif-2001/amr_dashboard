@@ -6,8 +6,6 @@ library(plotly)
 library(dplyr)
 
 data <- read_parquet("AMRData.parquet")
-head(data)
-
 literature_data <- read.csv("literature.csv")
 
 generateLiterature <- function() {
