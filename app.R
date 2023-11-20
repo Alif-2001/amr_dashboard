@@ -264,13 +264,13 @@ server <- function(input, output) {
   })
   output$total_tests_plot <- renderPlotly({
     temp = countyFilteredData(input$county_filter)
-    temp$month_year = as.character(paste(temp$order_month, temp$order_year))
+    temp$month_year = as.character(paste(temp$order_year, temp$order_month))
     plot_ly(temp, x = ~month_year) %>% 
       layout(
         title = paste("Tests In", input$county_filter, 
                       if (input$county_filter == "All") "Counties" else "County"
                       ),
-        xaxis = list(title = 'Month-Year'),
+        xaxis = list(title = 'Year-Month'),
         yaxis = list(title = 'Number of Tests')
       )
   })
