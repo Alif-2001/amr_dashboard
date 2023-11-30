@@ -5,6 +5,9 @@ library(arrow)
 library(plotly)
 library(dplyr)
 
+library(e1071)
+library(caret)
+
 data <- read_parquet("AMRData.parquet")
 literature_data <- read.csv("literature.csv")
 
@@ -26,29 +29,10 @@ generateLiterature <- function() {
 
 
 ############################
-# Naive Bayes for bacteria #
+# Load Naive Bayes for bacteria #
 ############################
-
-library(e1071)
-library(arrow)
-library(caret)
-library(dplyr)
-
-# cleanup data
-naive_data <- read_parquet("AMRData.parquet")[c(3, 6, 7, 12, 13)]
-naive_data <- na.omit(naive_data)
-
-naive_data$county <- as.factor(naive_data$county)
-naive_data$order_month <- as.factor(naive_data$order_month)
-naive_data$org_standard <- as.factor(naive_data$org_standard)
-naive_data$species <- as.factor(naive_data$species)
-naive_data$source <- as.factor(naive_data$source)
-
-set.seed(1)
-index <- createDataPartition(naive_data$org_standard, p = 0.7, list=FALSE)
-naive_train <- naive_data[index, ]
-naive <- naiveBayes(org_standard~., data=naive_train)
-
+naive_data <- read.csv("models/naive/naive_data.csv")
+naive <- readRDS("models/naive/naive.rds")
 
 
 ui <- dashboardPage(
@@ -56,7 +40,7 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Home", tabName = "home"),
-      menuItem("Use our Model", tabName = "model"),
+      #menuItem("Use our Model", tabName = "model"),
       menuItem("Methods", tabName = "method"),
       menuItem("Literature", tabName = "literature"),
       menuItem("Data", tabName = "data")
@@ -131,44 +115,44 @@ ui <- dashboardPage(
           )
         )
       ),
-      tabItem(
-        tabName = "model",
-        fluidRow(
-          box(
-            title = h3("Use Our Model"),
-            width = 12
-          ),
-          box(
-            title = h4("Your inputs here"),
-            width = 5,
-            selectInput(
-              "general_model_county_input",
-              "Select County", 
-              choices = unique(naive_data$county)),
-            selectInput(
-              "general_model_species_input",
-              "Select Species", 
-              choices = unique(naive_data$species)),
-            selectInput(
-              "general_model_month_input",
-              "Select Month", 
-              choices = unique(naive_data$order_month)),
-            selectInput(
-              "general_model_source_input",
-              "Select Source", 
-              choices = unique(naive_data$source))
-          ),
-          box(
-            width = 2,
-            actionButton("general_model_run", "Get Predictions")
-          ),
-          box(
-            title = h4("Drugs Likely To Be Effective"),
-            width = 5,
-            plotlyOutput("general_model_output")
-          )
-        )
-      ),
+      # tabItem(
+      #   tabName = "model",
+      #   fluidRow(
+      #     box(
+      #       title = h3("Use Our Model"),
+      #       width = 12
+      #     ),
+      #     box(
+      #       title = h4("Your inputs here"),
+      #       width = 5,
+      #       selectInput(
+      #         "general_model_county_input",
+      #         "Select County", 
+      #         choices = unique(data$county)),
+      #       selectInput(
+      #         "general_model_species_input",
+      #         "Select Species", 
+      #         choices = unique(data$species)),
+      #       selectInput(
+      #         "general_model_month_input",
+      #         "Select Month", 
+      #         choices = unique(data$order_month)),
+      #       selectInput(
+      #         "general_model_source_input",
+      #         "Select Source", 
+      #         choices = unique(data$source))
+      #     ),
+      #     box(
+      #       width = 2,
+      #       actionButton("general_model_run", "Get Predictions")
+      #     ),
+      #     box(
+      #       title = h4("Drugs Likely To Be Effective"),
+      #       width = 5,
+      #       plotlyOutput("general_model_output")
+      #     )
+      #   )
+      # ),
       tabItem(
         tabName = "method",
         fluidRow(
@@ -183,7 +167,27 @@ ui <- dashboardPage(
                it would give more insight on the probability or the likelihood 
                of the presence of a bacteria. The variables used in this case are 
                the county, the species, the month of the year and the source of 
-               the bacteria")
+               the bacteria. The data is cleaned, getting rid of any rows that have 
+               no values(NA) in them before creating the training and the test data.
+               Training accounted for 70% of the data and Testing accounted for 30% 
+               of the data."),
+          ),
+          box(
+            title = h3("Model Overall Stats"),
+            width = 12,
+            code(
+              "Accuracy : 0.3659",
+              br(), 
+              "95% CI : (0.3607, 0.3711)",
+              br(),
+              "No Information Rate : 0.2619",
+              br(),
+              "P-Value [Acc > NIR] : < 2.2e-16",
+              br(),
+              "Kappa : 0.1972",
+              br(),
+              "Mcnemar's Test P-Value : NA"
+            ),
           ),
           box(
             title = h4("Your inputs here"),
@@ -191,19 +195,19 @@ ui <- dashboardPage(
             selectInput(
               "naive_model_county_input",
               "Select County", 
-              choices = unique(naive_data$county)),
+              choices = unique(data$county)),
             selectInput(
               "naive_model_species_input",
               "Select Species", 
-              choices = unique(naive_data$species)),
+              choices = unique(data$species)),
             selectInput(
               "naive_model_month_input",
               "Select Month", 
-              choices = unique(naive_data$order_month)),
+              choices = unique(data$order_month)),
             selectInput(
               "naive_model_source_input",
               "Select Source", 
-              choices = unique(naive_data$source))
+              choices = unique(data$source))
           ),
           box(
             title = h4("Bacteria Predictions"),
@@ -228,7 +232,8 @@ ui <- dashboardPage(
           box(
             title = h2("Download Data"),
             width = 12,
-            downloadButton("downloadData", h2("Download"))
+            downloadButton("downloadData", h2("Original")),
+            downloadButton("downloadNaiveData", h2("Naive Data")),
           ),
           box(
             title = h2("Data Table"),
@@ -327,6 +332,14 @@ server <- function(input, output) {
     },
     content = function(file) {
       write.csv(data, file)
+    }
+  )
+  output$downloadNaiveData <- downloadHandler(
+    filename = function() {
+      paste("AMRNaiveData", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      write.csv(naive_data, file)
     }
   )
   output$dataTable <- renderDT({
