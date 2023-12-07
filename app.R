@@ -16,11 +16,11 @@ generateLiterature <- function() {
   
   for (i in 1:nrow(literature_data)) {
     boxes[[i]] <- box(
-      title = literature_data[i,]$Title,
+      title = literature_data[i, ]$Title,
       width = 6,
-      h5(literature_data[i,]$Year),
-      h5(literature_data[i,]$Author),
-      a(literature_data[i,]$Link)
+      h5(literature_data[i, ]$Year),
+      h5(literature_data[i, ]$Author),
+      a(literature_data[i, ]$Link)
     )
   }
   return(boxes)
@@ -101,6 +101,10 @@ ui <- dashboardPage(
                     style = "font-size: 24px;"
                   ),
                   p(
+                    "This model was implemented. Please see tab \"Model #1\"",
+                    style = "font-size: 16px;"
+                  ),
+                  p(
                     "Again, the naive Bayes classifier appears most fitting for our inquiry, especially considering the independence of the columns utilized in the classification.
                   We aim to predict a pathogen class that is discrete or categorical, encompassing 282 different types of pathogens in our dataset.
                   The naive Bayes classifier is particularly adept for this scenario, as it proficiently calculates the likelihood or probability of a bacterium's presence.
@@ -108,14 +112,44 @@ ui <- dashboardPage(
                     Alternatively, logistic regression could be employed to ascertain the presence of specific bacteria across different months.
                     However, this approach necessitates conducting individual tests for each type of bacteria, adding complexity to the analysis.",
                     style = "font-size: 16px;"
-                  )
+                  ),
+                  p(
+                    "In canines, which bacterial infections are most commonly found in which infection
+                    sites?",
+                    style = "font-size: 24px;"
+                  ),
+                  p(
+                    "The model designed to address this question is tasked with predicting a multi-class nominal variable (bacteria) using a set of independent qualitative variables such as location, infection site, and the age of the animal.
+                    Our community partner's data encompasses over 200 distinct bacteria, and the model is expected to calculate probabilities for each type of bacteria, given the independent variables.
+                    In this context, a multinomial logistic regression model is highly appropriate.
+                    Multinomial logistic regression is ideally suited for predicting dependent variables that fall into more than two categories.
+                    These models are versatile, as they can handle both qualitative and quantitative independent variables.
+                    A significant advantage of this approach is the lack of a requirement for normality in the training data.
+                    This aspect offers considerable flexibility in the types of data that can be effectively utilized within the model, potentially enhancing its applicability and accuracy.",
+                    style = "font-size: 16px;"
+                  ),
+                  p(
+                    "How does the antibiotic resistance profile of bacteria in canine and feline differ
+between counties in North America from 2019-2022?",
+                    style = "font-size: 24px;"
+                  ),
+                  p(
+                    "The selection of the naive Bayes method seems particularly apt for this analysis. 
+                    The independent variables at our disposal include types of bacteria (org_standard), species, the year (order_year), state, and country. 
+                    These variables are categorical, making them well-suited for the multinomial Naive Bayes model. 
+                    This method is also advantageous for handling high-dimensional data, which is relevant here due to the extensive variety of bacteria and antibiotics in the dataset. 
+                    With over 200 different types of bacteria and 57 antibiotics, the model is well-equipped to handle such complexity. 
+                    By utilizing this data and the multinomial naive Bayes method, we can effectively predict the probability of antibiotic resistance levels among different bacteria, providing valuable insights for medical and biological research.",
+                    style = "font-size: 16px;"
+                  ),
                 )
               )
-            ),),
+            ), ),
     tabItem(tabName = "summary",
             fluidRow(
+              h1("Summary of the Data", style = "text-align: center;"),
+              br(),
               box(
-                title = "Summary of the Data",
                 width = 6,
                 selectInput("county_filter",
                             "Select County",
@@ -191,69 +225,68 @@ ui <- dashboardPage(
     #     )
     #   )
     # ),
-    tabItem(tabName = "method",
-            fluidRow(
-              h1("Model #1", style = "text-align: center;"),
-              h3(
-                "Which pathogens are most commonly found in canines during different times of the year?",
-                style = "text-align: center;"
-              ),
-              br(),
-            ),
-            fluidRow(
-              box(
-                title = h4("Model Inputs", style = "text-align: center"),
-                width = 6,
-                selectInput(
-                  "naive_model_county_input",
-                  "Select County",
-                  choices = unique(data$county)
-                ),
-                selectInput(
-                  "naive_model_species_input",
-                  "Select Species",
-                  choices = unique(data$species)
-                ),
-                selectInput(
-                  "naive_model_month_input",
-                  "Select Month",
-                  choices = unique(data$order_month)
-                ),
-                selectInput(
-                  "naive_model_source_input",
-                  "Select Source",
-                  choices = unique(data$source)
-                )
-              ),
-              box(
-                title = h4("Bacteria Predictions", style = "text-align: center"),
-                width = 6,
-                plotlyOutput("naive_model_output")
-              )
-            ),
-            fluidRow(
-              box(
-                title = h3("Model Overall Stats", style = "text-align: center;"),
-                width = 12,
-                tags$style(HTML(".center-code { text-align: center; }")),
-                div(
-                  class = "center-code",
-                  code(
-                    "Accuracy : 0.3659",
-                    br(),
-                    "95% CI : (0.3607, 0.3711)",
-                    br(),
-                    "No Information Rate : 0.2619",
-                    br(),
-                    "P-Value [Acc > NIR] : < 2.2e-16",
-                    br(),
-                    "Kappa : 0.1972",
-                    br(),
-                    "Mcnemar's Test P-Value : NA"
-                  )
-                )
-              )
-            )
+    tabItem(
+      tabName = "method",
+      fluidRow(
+        h1(id = "model1", "Model #1", style = "text-align: center;"),
+        h3(
+          "Which pathogens are most commonly found in canines during different times of the year?",
+          style = "text-align: center;"
+        ),
+        br(),
+      ),
+      fluidRow(
+        box(
+          title = h4("Model Inputs", style = "text-align: center"),
+          width = 6,
+          selectInput(
+            "naive_model_county_input",
+            "Select County",
+            choices = unique(data$county)
+          ),
+          selectInput(
+            "naive_model_species_input",
+            "Select Species",
+            choices = unique(data$species)
+          ),
+          selectInput(
+            "naive_model_month_input",
+            "Select Month",
+            choices = unique(data$order_month)
+          ),
+          selectInput(
+            "naive_model_source_input",
+            "Select Source",
+            choices = unique(data$source)
+          )
+        ),
+        box(
+          title = h4("Bacteria Predictions", style = "text-align: center"),
+          width = 6,
+          plotlyOutput("naive_model_output")
+        )
+      ),
+      fluidRow(box(
+        title = h3("Model Overall Stats", style = "text-align: center;"),
+        width = 12,
+        tags$style(HTML(".center-code { text-align: center; }")),
+        div(
+          class = "center-code",
+          code(
+            "Accuracy : 0.3659",
+            br(),
+            "95% CI : (0.3607, 0.3711)",
+            br(),
+            "No Information Rate : 0.2619",
+            br(),
+            "P-Value [Acc > NIR] : < 2.2e-16",
+            br(),
+            "Kappa : 0.1972",
+            br(),
+            "Mcnemar's Test P-Value : NA"
+          )
+        )
+      ))
     ),
     tabItem(tabName = "literature",
             fluidRow(box(
@@ -282,7 +315,7 @@ countyFilteredData <- function(select) {
   return(if (select == "All")
     data
     else
-      data[data$county == select,])
+      data[data$county == select, ])
 }
 
 server <- function(input, output) {
@@ -291,11 +324,11 @@ server <- function(input, output) {
   })
   output$total_tests_canine <- renderText({
     temp = countyFilteredData(input$county_filter)
-    as.character(nrow(temp[temp$species == "CANINE",]))
+    as.character(nrow(temp[temp$species == "CANINE", ]))
   })
   output$total_tests_feline <- renderText({
     temp = countyFilteredData(input$county_filter)
-    as.character(nrow(temp[temp$species == "FELINE",]))
+    as.character(nrow(temp[temp$species == "FELINE", ]))
   })
   output$total_tests_plot <- renderPlotly({
     temp = countyFilteredData(input$county_filter)
@@ -353,14 +386,14 @@ server <- function(input, output) {
     prediction <- predict(naive, naive_input, "raw")
     prediction <- as.data.frame(prediction)
     selected_columns <- prediction %>%
-      select_if( ~ all(. >= 0.01))
+      select_if(~ all(. >= 0.01))
     selected_columns <- as.matrix(selected_columns)
     other <- c(1 - rowSums(selected_columns))
     selected_columns <- cbind(selected_columns, other)
     
     plot_ly(
       labels = colnames(selected_columns),
-      values = selected_columns[1,],
+      values = selected_columns[1, ],
       type = "pie"
     )
   })
