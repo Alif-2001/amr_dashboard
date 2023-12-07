@@ -104,55 +104,51 @@ ui <- dashboardPage(
                 )
               )
             ),),
-    tabItem(tabName = "summary",
-            fluidRow(
-              box(
-                title = h2("Summary of the data"),
-                width = 6,
-                fluidRow(
-                  box(
-                    width = 12,
-                    selectInput("county_filter",
-                                "Select County",
-                                choices = append(c("All"), unique(data$county)))
-                  ),
-                  box(
-                    title = h1("Total Tests"),
-                    status = "success",
-                    background = "black",
-                    width = 6,
-                    h3(textOutput("total_tests"))
-                  ),
-                  box(width = 6,
-                      fluidRow(
-                        box(
-                          title = "Canine",
-                          status = "success",
-                          background = "black",
-                          width = 6,
-                          h3(textOutput("total_tests_canine"))
-                        ),
-                        box(
-                          title = "Feline",
-                          status = "success",
-                          background = "black",
-                          width = 6,
-                          h3(textOutput("total_tests_feline"))
-                        )
-                      ))
-                )
-              ),
-              box(
-                title = "Tests over time",
-                width = 12,
-                plotlyOutput("total_tests_plot")
-              ),
-              box(
-                title = "Bacteria summary",
-                width = 12,
-                plotlyOutput("total_bacteria_plot")
-              )
-            )),
+    tabItem(
+      tabName = "summary",
+      fluidRow(
+        box(
+          title = "Summary of the Data",
+          width = 6,
+          selectInput(
+            "county_filter",
+            "Select County",
+            choices = c("All", unique(data$county))
+          )
+        ),
+        box(
+          title = "Total Tests",
+          width = 3,
+          status = "success",
+          h3(textOutput("total_tests"))
+        ),
+        box(
+          title = "Tests by Type",
+          width = 3,
+          solidHeader = TRUE,
+          status = "success",
+          background = "black",
+          div(
+            h4("Canine"),
+            h3(textOutput("total_tests_canine"))
+          ),
+          div(
+            h4("Feline"),
+            h3(textOutput("total_tests_feline"))
+          )
+        ),
+        box(
+          title = "Tests Over Time",
+          width = 12,
+          plotlyOutput("total_tests_plot")
+        ),
+        box(
+          title = "Bacteria Summary",
+          width = 12,
+          plotlyOutput("total_bacteria_plot")
+        )
+      )
+    ),
     # tabItem(
     #   tabName = "model",
     #   fluidRow(
