@@ -42,7 +42,7 @@ ui <- dashboardPage(
       menuItem("Home", tabName = "home"),
       menuItem("Summary", tabName = "summary"),
       #menuItem("Use our Model", tabName = "model"),
-      menuItem("Methods", tabName = "method"),
+      menuItem("Model #1", tabName = "method"),
       menuItem("Literature", tabName = "literature"),
       menuItem("Data", tabName = "data")
     )
@@ -52,13 +52,13 @@ ui <- dashboardPage(
             fluidRow(
               column(
                 width = 12,
-                # Full-width column
                 align = "center",
-                # Center-align content
                 h1("Welcome to the Weyland-Yutani Corporation Dashboard"),
                 h3("\"Building Better Worlds\"", style = "margin-bottom: 32px;"),
                 box(
-                  title = HTML("<strong style='font-size: 32px;'>The Research Problem</strong>"),
+                  title = HTML(
+                    "<strong style='font-size: 32px;'>The Research Problem</strong>"
+                  ),
                   width = 12,
                   solidHeader = TRUE,
                   p(
@@ -81,74 +81,78 @@ ui <- dashboardPage(
                   )
                 ),
                 box(
-                  title = HTML("<strong style='font-size: 32px;'>Our Research Questions</strong>"),
+                  title = HTML(
+                    "<strong style='font-size: 32px;'>Our Research Questions</strong>"
+                  ),
                   width = 12,
                   solidHeader = TRUE,
                   p(
-                    "What is the most effective antimicrobial treatment for any given type of infection in cats?", 
+                    "What is the most effective antimicrobial treatment for any given type of infection in cats?",
                     style = "font-size: 24px;"
                   ),
-                  p("We endeavored to address this question using a naive Bayes classifier, specifically a multinomial variant, chosen for its suitability in handling discrete data. 
-                  This classifier excels in categorizing unlabeled data points by leveraging existing data and conditional probabilities. 
-                    Although it simplistically presumes independence between attributes, the effectiveness of this algorithm is well-documented.", style = "font-size: 16px;"),
+                  p(
+                    "We endeavored to address this question using a naive Bayes classifier, specifically a multinomial variant, chosen for its suitability in handling discrete data.
+                  This classifier excels in categorizing unlabeled data points by leveraging existing data and conditional probabilities.
+                    Although it simplistically presumes independence between attributes, the effectiveness of this algorithm is well-documented.",
+                    style = "font-size: 16px;"
+                  ),
                   p(
                     "Which pathogens are most commonly found in canines during different times of the year?",
                     style = "font-size: 24px;"
                   ),
-                  p("Again, the naive Bayes classifier appears most fitting for our inquiry, especially considering the independence of the columns utilized in the classification. 
-                  We aim to predict a pathogen class that is discrete or categorical, encompassing 282 different types of pathogens in our dataset. 
-                  The naive Bayes classifier is particularly adept for this scenario, as it proficiently calculates the likelihood or probability of a bacterium's presence. 
-                  Our assumption is that the occurrence of a pathogen is unrelated to both the month and the species of the pet in question. 
-                    Alternatively, logistic regression could be employed to ascertain the presence of specific bacteria across different months. 
-                    However, this approach necessitates conducting individual tests for each type of bacteria, adding complexity to the analysis.", style = "font-size: 16px;")
+                  p(
+                    "Again, the naive Bayes classifier appears most fitting for our inquiry, especially considering the independence of the columns utilized in the classification.
+                  We aim to predict a pathogen class that is discrete or categorical, encompassing 282 different types of pathogens in our dataset.
+                  The naive Bayes classifier is particularly adept for this scenario, as it proficiently calculates the likelihood or probability of a bacterium's presence.
+                  Our assumption is that the occurrence of a pathogen is unrelated to both the month and the species of the pet in question.
+                    Alternatively, logistic regression could be employed to ascertain the presence of specific bacteria across different months.
+                    However, this approach necessitates conducting individual tests for each type of bacteria, adding complexity to the analysis.",
+                    style = "font-size: 16px;"
+                  )
                 )
               )
             ),),
-    tabItem(
-      tabName = "summary",
-      fluidRow(
-        box(
-          title = "Summary of the Data",
-          width = 6,
-          selectInput(
-            "county_filter",
-            "Select County",
-            choices = c("All", unique(data$county))
-          )
-        ),
-        box(
-          title = "Total Tests",
-          width = 3,
-          status = "success",
-          h3(textOutput("total_tests"))
-        ),
-        box(
-          title = "Tests by Type",
-          width = 3,
-          solidHeader = TRUE,
-          status = "success",
-          background = "black",
-          div(
-            h4("Canine"),
-            h3(textOutput("total_tests_canine"))
-          ),
-          div(
-            h4("Feline"),
-            h3(textOutput("total_tests_feline"))
-          )
-        ),
-        box(
-          title = "Tests Over Time",
-          width = 12,
-          plotlyOutput("total_tests_plot")
-        ),
-        box(
-          title = "Bacteria Summary",
-          width = 12,
-          plotlyOutput("total_bacteria_plot")
-        )
-      )
-    ),
+    tabItem(tabName = "summary",
+            fluidRow(
+              box(
+                title = "Summary of the Data",
+                width = 6,
+                selectInput("county_filter",
+                            "Select County",
+                            choices = c("All", unique(data$county)))
+              ),
+              box(
+                title = "Total Tests",
+                width = 3,
+                status = "success",
+                h3(textOutput("total_tests"))
+              ),
+              box(
+                title = "Tests by Type",
+                width = 3,
+                solidHeader = TRUE,
+                status = "success",
+                background = "black",
+                div(h4("Canine"),
+                    h3(textOutput(
+                      "total_tests_canine"
+                    ))),
+                div(h4("Feline"),
+                    h3(textOutput(
+                      "total_tests_feline"
+                    )))
+              ),
+              box(
+                title = "Tests Over Time",
+                width = 12,
+                plotlyOutput("total_tests_plot")
+              ),
+              box(
+                title = "Bacteria Summary",
+                width = 12,
+                plotlyOutput("total_bacteria_plot")
+              )
+            )),
     # tabItem(
     #   tabName = "model",
     #   fluidRow(
@@ -189,43 +193,16 @@ ui <- dashboardPage(
     # ),
     tabItem(tabName = "method",
             fluidRow(
-              box(
-                title = h3("Using Naive Bayes to Predict Bacteria"),
-                width = 12,
-                h4(
-                  "This method seems to be the most appropriate for this question,
-               given that the columns used for the classification are independent
-               from each other. The pathogen class that is being predicted is
-               discrete or categorical, with 282 different types of pathogens
-               in the data. The naive bayes is well-suited for this task since
-               it would give more insight on the probability or the likelihood
-               of the presence of a bacteria. The variables used in this case are
-               the county, the species, the month of the year and the source of
-               the bacteria. The data is cleaned, getting rid of any rows that have
-               no values(NA) in them before creating the training and the test data.
-               Training accounted for 70% of the data and Testing accounted for 30%
-               of the data."
-                ),
+              h1("Model #1", style = "text-align: center;"),
+              h3(
+                "Which pathogens are most commonly found in canines during different times of the year?",
+                style = "text-align: center;"
               ),
+              br(),
+            ),
+            fluidRow(
               box(
-                title = h3("Model Overall Stats"),
-                width = 12,
-                code(
-                  "Accuracy : 0.3659",
-                  br(),
-                  "95% CI : (0.3607, 0.3711)",
-                  br(),
-                  "No Information Rate : 0.2619",
-                  br(),
-                  "P-Value [Acc > NIR] : < 2.2e-16",
-                  br(),
-                  "Kappa : 0.1972",
-                  br(),
-                  "Mcnemar's Test P-Value : NA"
-                ),
-              ),
-              box(
-                title = h4("Your inputs here"),
+                title = h4("Model Inputs", style = "text-align: center"),
                 width = 6,
                 selectInput(
                   "naive_model_county_input",
@@ -249,11 +226,35 @@ ui <- dashboardPage(
                 )
               ),
               box(
-                title = h4("Bacteria Predictions"),
+                title = h4("Bacteria Predictions", style = "text-align: center"),
                 width = 6,
                 plotlyOutput("naive_model_output")
               )
-            )),
+            ),
+            fluidRow(
+              box(
+                title = h3("Model Overall Stats", style = "text-align: center;"),
+                width = 12,
+                tags$style(HTML(".center-code { text-align: center; }")),
+                div(
+                  class = "center-code",
+                  code(
+                    "Accuracy : 0.3659",
+                    br(),
+                    "95% CI : (0.3607, 0.3711)",
+                    br(),
+                    "No Information Rate : 0.2619",
+                    br(),
+                    "P-Value [Acc > NIR] : < 2.2e-16",
+                    br(),
+                    "Kappa : 0.1972",
+                    br(),
+                    "Mcnemar's Test P-Value : NA"
+                  )
+                )
+              )
+            )
+    ),
     tabItem(tabName = "literature",
             fluidRow(box(
               title = h2("Literature Used"),
