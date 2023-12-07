@@ -40,7 +40,7 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Home", tabName = "home"),
       menuItem("Summary", tabName = "summary"),
-      menuItem("Model #1", tabName = "method"),
+      menuItem("Model #1", tabName = "model1"),
       menuItem("Literature", tabName = "literature"),
       menuItem("Data", tabName = "data")
     )
@@ -187,7 +187,7 @@ ui <- dashboardPage(
               )
             )),
     tabItem(
-      tabName = "method",
+      tabName = "model1",
       fluidRow(
         h1("Model #1", style = "text-align: center;"),
         h3(
@@ -280,7 +280,7 @@ countyFilteredData <- function(select) {
       data[data$county == select, ])
 }
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   output$total_tests <- renderText({
     as.character(nrow(countyFilteredData(input$county_filter)))
   })
