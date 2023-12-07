@@ -4,7 +4,6 @@ library(DT)
 library(arrow)
 library(plotly)
 library(dplyr)
-
 library(e1071)
 library(caret)
 
@@ -36,12 +35,11 @@ naive <- readRDS("models/naive/naive.rds")
 
 
 ui <- dashboardPage(
-  dashboardHeader(title = "WY - dashboard"),
+  dashboardHeader(title = "Weyland-Yutani"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("Home", tabName = "home"),
       menuItem("Summary", tabName = "summary"),
-      #menuItem("Use our Model", tabName = "model"),
       menuItem("Model #1", tabName = "method"),
       menuItem("Literature", tabName = "literature"),
       menuItem("Data", tabName = "data")
@@ -101,7 +99,9 @@ ui <- dashboardPage(
                     style = "font-size: 24px;"
                   ),
                   p(
-                    "This model was implemented. Please see tab \"Model #1\"",
+                    HTML(
+                      "<strong>This model was implemented. Please see tab \"Model #1\"</strong>"
+                    ),
                     style = "font-size: 16px;"
                   ),
                   p(
@@ -129,16 +129,15 @@ ui <- dashboardPage(
                     style = "font-size: 16px;"
                   ),
                   p(
-                    "How does the antibiotic resistance profile of bacteria in canine and feline differ
-between counties in North America from 2019-2022?",
+                    "How does the antibiotic resistance profile of bacteria in canines and felines differ between counties in North America from 2019-2022?",
                     style = "font-size: 24px;"
                   ),
                   p(
-                    "The selection of the naive Bayes method seems particularly apt for this analysis. 
-                    The independent variables at our disposal include types of bacteria (org_standard), species, the year (order_year), state, and country. 
-                    These variables are categorical, making them well-suited for the multinomial Naive Bayes model. 
-                    This method is also advantageous for handling high-dimensional data, which is relevant here due to the extensive variety of bacteria and antibiotics in the dataset. 
-                    With over 200 different types of bacteria and 57 antibiotics, the model is well-equipped to handle such complexity. 
+                    "The selection of the naive Bayes method seems particularly apt for this analysis.
+                    The independent variables at our disposal include types of bacteria (org_standard), species, the year (order_year), state, and country.
+                    These variables are categorical, making them well-suited for the multinomial Naive Bayes model.
+                    This method is also advantageous for handling high-dimensional data, which is relevant here due to the extensive variety of bacteria and antibiotics in the dataset.
+                    With over 200 different types of bacteria and 57 antibiotics, the model is well-equipped to handle such complexity.
                     By utilizing this data and the multinomial naive Bayes method, we can effectively predict the probability of antibiotic resistance levels among different bacteria, providing valuable insights for medical and biological research.",
                     style = "font-size: 16px;"
                   ),
@@ -187,48 +186,10 @@ between counties in North America from 2019-2022?",
                 plotlyOutput("total_bacteria_plot")
               )
             )),
-    # tabItem(
-    #   tabName = "model",
-    #   fluidRow(
-    #     box(
-    #       title = h3("Use Our Model"),
-    #       width = 12
-    #     ),
-    #     box(
-    #       title = h4("Your inputs here"),
-    #       width = 5,
-    #       selectInput(
-    #         "general_model_county_input",
-    #         "Select County",
-    #         choices = unique(data$county)),
-    #       selectInput(
-    #         "general_model_species_input",
-    #         "Select Species",
-    #         choices = unique(data$species)),
-    #       selectInput(
-    #         "general_model_month_input",
-    #         "Select Month",
-    #         choices = unique(data$order_month)),
-    #       selectInput(
-    #         "general_model_source_input",
-    #         "Select Source",
-    #         choices = unique(data$source))
-    #     ),
-    #     box(
-    #       width = 2,
-    #       actionButton("general_model_run", "Get Predictions")
-    #     ),
-    #     box(
-    #       title = h4("Drugs Likely To Be Effective"),
-    #       width = 5,
-    #       plotlyOutput("general_model_output")
-    #     )
-    #   )
-    # ),
     tabItem(
       tabName = "method",
       fluidRow(
-        h1(id = "model1", "Model #1", style = "text-align: center;"),
+        h1("Model #1", style = "text-align: center;"),
         h3(
           "Which pathogens are most commonly found in canines during different times of the year?",
           style = "text-align: center;"
@@ -289,16 +250,17 @@ between counties in North America from 2019-2022?",
       ))
     ),
     tabItem(tabName = "literature",
-            fluidRow(box(
-              title = h2("Literature Used"),
-              width = 12,
-              do.call(fluidRow, generateLiterature())
-            ))),
+            fluidRow(
+              h1("Literature Used", style = "text-align: center;"),
+              box(width = 12,
+                  do.call(fluidRow, generateLiterature()))
+            )),
     tabItem(tabName = "data",
             fluidRow(
+              h1("Download Data", style = "text-align: center;"),
               box(
-                title = h2("Download Data"),
                 width = 12,
+                align = "center",
                 downloadButton("downloadData", h2("Original")),
                 downloadButton("downloadNaiveData", h2("Naive Data")),
               ),
