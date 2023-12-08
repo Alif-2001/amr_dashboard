@@ -150,19 +150,20 @@ ui <- dashboardPage(
                     p("Dependent variable(s): resistance",
                       style = "font-size: 16px;"),
                     p(
-                      "What is the most effective antimicrobial treatment for any given type of infection in cats?",
+                      "What is the likelihood that escherichia coli in a companion animal will be resistant to a given antibiotic?",
                       style = "font-size: 24px;"
                     ),
                     p(
-                      "A naive Bayes classifier, specifically a multinomial variant, was chosen for its suitability in handling discrete data.
-                    This classifier excels in categorizing unlabeled data points by leveraging existing data and conditional probabilities.
-                    Although it simplistically presumes independence between attributes, the effectiveness of this algorithm is well-documented.",
+                      "A multinomial logistic regression model was chosen as the most appropriate method to answer this question. This is because
+                    it allows us to label resistance as any of the various labels present in our data, as well as it being able to account for
+                    the different magnitudes to which the independent variables affect resistence. This allows us to come much closer to representing
+                    the real world scenario we are attempting to emulate.",
                       style = "font-size: 16px;"
                     ),
                     p("Model: multinomial naive Bayes classifier",
                       style = "font-size: 16px;"),
                     p(
-                      "Independent variables: panel/assay name, source, species",
+                      "Independent variables: source, species, org_standard",
                       style = "font-size: 16px;"
                     ),
                     p("Dependent variable(s): resistance level",
