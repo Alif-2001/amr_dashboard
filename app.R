@@ -439,7 +439,6 @@ server <- function(input, output, session) {
     )
     prediction <- predict(glm, glm_input, type = "response")
     prediction <- as.data.frame(prediction)
-    print(prediction)
     selected_columns <- prediction %>%
       select_if(~ all(. >= 0))
     selected_columns <- as.matrix(selected_columns)
