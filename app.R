@@ -126,7 +126,7 @@ ui <- dashboardPage(
                     p("Dependent variable(s): bacteria",
                       style = "font-size: 16px;"),
                     p(
-                      "How does the antibiotic resistance profile of E.Coli in canines and felines differ between counties in North America?",
+                      "How does the antibiotic resistance profile of E.Coli in canines and felines differ between counties in North America given antibiotic R1?",
                       style = "font-size: 24px;"
                     ),
                     p(
@@ -135,15 +135,13 @@ ui <- dashboardPage(
                       ),
                       style = "font-size: 16px;"
                     ),
-                    p(
-                      "The selection of the naive Bayes method seems particularly apt for this analysis.
-                    The independent variables at our disposal are categorical, making them well-suited for the multinomial Naive Bayes model.
-                    This method is also advantageous for handling high-dimensional data, which is relevant here due to the extensive variety of bacteria and antibiotics in the dataset.
-                    With over 200 different types of bacteria and 57 antibiotics, the model is well-equipped to handle such complexity.
-                    By utilizing this data and the multinomial naive Bayes method, we can effectively predict the probability of antibiotic resistance levels among different bacteria, providing valuable insights for medical and biological research.",
+                    p("In this question, our independent variable is the categorical variable 'county', while the dependent variable is 'resistance' represented by either R(Resistant) or S(Susceptible)
+                      which represents the likelihood of antibiotic resistance. Since our dependent variable is binary, we decided to use logistic regression to help answer this question. 
+                      By employing logistic regression, we can effectively model how the county variable influences the likelihood of antibiotic resistance among E.coli.
+                      This approach enables us to derive valuable insights regarding regional variations in antibiotic resistance profiles among canines and felines in North America.",
                       style = "font-size: 16px;"
                     ),
-                    p("Model: multinomial naive Bayes classifier",
+                    p("Model: Logistic Regression",
                       style = "font-size: 16px;"),
                     p("Independent variables: county",
                       style = "font-size: 16px;"),
@@ -302,7 +300,7 @@ ui <- dashboardPage(
         fluidRow(
           h1("Model #2", style = "text-align: center;"),
           h3(
-            "How does the antibiotic resistance profile of E.Coli in canines and felines differ between counties in North America?",
+            "How does the antibiotic resistance profile of E.Coli in canines and felines differ between counties in North America given antibiotic R1?",
             style = "text-align: center;"
           ),
           br(),
@@ -330,11 +328,11 @@ ui <- dashboardPage(
           div(
             class = "center-code",
             code(
-              "Accuracy : 0.3041",
+              "Accuracy : 0.3059",
               br(),
-              "95% CI : (0.2987, 0.3095)",
+              "95% CI : (0.2954, 0.3166)",
               br(),
-              "No Information Rate : 0.6959",
+              "No Information Rate : 0.6951",
               br(),
               "P-Value [Acc > NIR] : 1",
               br(),
@@ -461,13 +459,13 @@ server <- function(input, output, session) {
   ## GLM model output
   output$glm_model_output <- renderPlotly({
     glm_input <- data.frame(county = input$glm_model_county_input)
-    prediction <- predict(glm, glm_input, type = "response")
-    prediction <- as.data.frame(prediction)
-    selected_columns <- prediction %>%
-      select_if(~ all(. >= 0))
+    Susciptible <- predict(glm, glm_input, type = "response")
+    Susciptible <- as.data.frame(Susciptible)
+    selected_columns <- Susciptible %>%
+    select_if(~ all(. >= 0))
     selected_columns <- as.matrix(selected_columns)
-    other <- c(1 - rowSums(selected_columns))
-    selected_columns <- cbind(selected_columns, other)
+    Resistant <- c(1 - rowSums(selected_columns))
+    selected_columns <- cbind(selected_columns, Resistant)
     
     plot_ly(
       labels = colnames(selected_columns),
