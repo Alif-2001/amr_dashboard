@@ -7,6 +7,10 @@ library(dplyr)
 library(e1071)
 library(caret)
 
+#############
+# Read Data #
+#############
+
 data <- read_parquet("AMRData.parquet")
 literature_data <- read.csv("literature.csv")
 
@@ -27,12 +31,22 @@ generateLiterature <- function() {
 
 
 
-############################
+#################################
 # Load Naive Bayes for bacteria #
-############################
+################################
 naive_data <- read.csv("models/naive/naive_data.csv")
 naive <- readRDS("models/naive/naive.rds")
 
+###################################
+# Load GLM for E Coli predictions#
+##################################
+glm_data <- read.csv("models/glm/LRdata.csv")
+glm <- readRDS("models/glm/glm.rds")
+
+
+#############
+# Create UI #
+#############
 
 ui <- dashboardPage(
   dashboardHeader(title = "Weyland-Yutani"),
@@ -41,6 +55,7 @@ ui <- dashboardPage(
       menuItem("Home", tabName = "home"),
       menuItem("Summary", tabName = "summary"),
       menuItem("Model #1", tabName = "model1"),
+      menuItem("Model #2", tabName = "model2"),
       menuItem("Literature", tabName = "literature"),
       menuItem("Data", tabName = "data")
     )
@@ -95,7 +110,8 @@ ui <- dashboardPage(
                     style = "font-size: 16px;"
                   ),
                   p(
-                    "Which pathogens are most commonly found in canines during different times of the year?",
+                    "Which pathogens are most commonly found based on the times of the year, 
+                    the species, the county, and the source of the infection?",
                     style = "font-size: 24px;"
                   ),
                   p(
@@ -129,12 +145,18 @@ ui <- dashboardPage(
                     style = "font-size: 16px;"
                   ),
                   p(
-                    "How does the antibiotic resistance profile of bacteria in canines and felines differ between counties in North America from 2019-2022?",
+                    "How does the antibiotic resistance profile of E.Coli in canine and feline differ between counties in North America?",
                     style = "font-size: 24px;"
                   ),
                   p(
+                    HTML(
+                      "<strong>This model was implemented. Please see tab \"Model #2\"</strong>"
+                    ),
+                    style = "font-size: 16px;"
+                  ),
+                  p(
                     "The selection of the naive Bayes method seems particularly apt for this analysis.
-                    The independent variables at our disposal include types of bacteria (org_standard), species, the year (order_year), state, and country.
+                    The independent variables at our disposal include types of bacteria (org_standard), species, the year (order_year), state, and county.
                     These variables are categorical, making them well-suited for the multinomial Naive Bayes model.
                     This method is also advantageous for handling high-dimensional data, which is relevant here due to the extensive variety of bacteria and antibiotics in the dataset.
                     With over 200 different types of bacteria and 57 antibiotics, the model is well-equipped to handle such complexity.
@@ -191,7 +213,8 @@ ui <- dashboardPage(
       fluidRow(
         h1("Model #1", style = "text-align: center;"),
         h3(
-          "Which pathogens are most commonly found in canines during different times of the year?",
+          "Which pathogens are most commonly found based on the times of the year,
+          the species, the county, and the source of the infection?",
           style = "text-align: center;"
         ),
         br(),
@@ -249,6 +272,54 @@ ui <- dashboardPage(
         )
       ))
     ),
+    tabItem(
+      tabName = "model2",
+      fluidRow(
+        h1("Model #2", style = "text-align: center;"),
+        h3(
+          "How does the antibiotic resistance profile of E.Coli in canine and feline differ between counties in North America?",
+          style = "text-align: center;"
+        ),
+        br(),
+      ),
+      fluidRow(
+        box(
+          title = h4("Model Inputs", style = "text-align: center"),
+          width = 6,
+          selectInput(
+            "glm_model_county_input",
+            "Select County",
+            choices = unique(data$county)
+          )
+        ),
+        box(
+          title = h4("Resistance Predictions", style = "text-align: center"),
+          width = 6,
+          plotlyOutput("glm_model_output")
+        )
+      ),
+      fluidRow(box(
+        title = h3("Model Overall Stats", style = "text-align: center;"),
+        width = 12,
+        tags$style(HTML(".center-code { text-align: center; }")),
+        div(
+          class = "center-code",
+          code(
+            "Accuracy : 0.3041",
+            br(),
+            "95% CI : (0.2987, 0.3095)",
+            br(),
+            "No Information Rate : 0.6959",
+            br(),
+            "P-Value [Acc > NIR] : 1",
+            br(),
+            "Kappa : 0",
+            br(),
+            "Mcnemar's Test P-Value : <2e-16"
+          )
+        )
+      ))
+    ),
     tabItem(tabName = "literature",
             fluidRow(
               h1("Literature Used", style = "text-align: center;"),
@@ -262,7 +333,8 @@ ui <- dashboardPage(
                 width = 12,
                 align = "center",
                 downloadButton("downloadData", h2("Original")),
-                downloadButton("downloadNaiveData", h2("Naive Data")),
+                downloadButton("downloadNaiveData", h2("Model 1 Data")),
+                downloadButton("downloadGlmData", h2("Model 2 Data"))
               ),
               box(
                 title = h2("Data Table"),
@@ -360,6 +432,27 @@ server <- function(input, output, session) {
     )
   })
   
+  ## GLM model output
+  output$glm_model_output <- renderPlotly({
+    glm_input <- data.frame(
+      county = input$glm_model_county_input
+    )
+    prediction <- predict(glm, glm_input, type = "response")
+    prediction <- as.data.frame(prediction)
+    print(prediction)
+    selected_columns <- prediction %>%
+      select_if(~ all(. >= 0))
+    selected_columns <- as.matrix(selected_columns)
+    other <- c(1 - rowSums(selected_columns))
+    selected_columns <- cbind(selected_columns, other)
+    
+    plot_ly(
+      labels = colnames(selected_columns),
+      values = selected_columns[1, ],
+      type = "pie"
+    )
+  })
+  
   
   ## Download page
   output$downloadData <- downloadHandler(
@@ -372,10 +465,18 @@ server <- function(input, output, session) {
   )
   output$downloadNaiveData <- downloadHandler(
     filename = function() {
-      paste("AMRNaiveData", Sys.Date(), ".csv")
+      paste("AMRModel1Data", Sys.Date(), ".csv")
     },
     content = function(file) {
       write.csv(naive_data, file)
+    }
+  )
+  output$downloadGlmData <- downloadHandler(
+    filename = function() {
+      paste("AMRModel2Data", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      write.csv(glm_data, file)
     }
   )
   output$dataTable <- renderDT({
